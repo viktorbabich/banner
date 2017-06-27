@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <title>Philips HTML Banner {{ ctx.name }}</title>
+  <meta name="ad.size" content="width={{ ctx.width }},height={{ ctx.height }}">
+  <script>
+    var clickTag = "http://www.google.org";
+  </script>
+</head>
+
+<body style="margin:0;padding:0;">
+  <a href="javascript:window.open(window.clickTag)">
+    <div id="banner_{{ ctx.id }}" style="height: {{ ctx.height }}px; position: relative; width: {{ ctx.width }}px">
+      {% if ctx.files.length > 1 %}
+        {%- for item in ctx.files %}
+        <div data-duration="{{ item.duration }}" data-fadespeed="{{ item.fade }}" style="height: {{ ctx.height }}px; background: url('{{ item.img }}') no-repeat 50% 50% #fff; -moz-background-size: cover; -o-background-size: cover; -webkit-background-size: cover; background-size: cover; width: 100%; z-index: 0; position: absolute; top: 0; left: 0;">
+        </div>
+        {% endfor -%}
+      {% elif ctx.files.length === 1 %}
+        <div style="height: {{ ctx.height }}px; background: url('{{ctx.files[0].img}}') no-repeat 50% 50% #fff; -moz-background-size: cover; -o-background-size: cover; -webkit-background-size: cover; background-size: cover; width: 100%; z-index: 0; position: absolute; top: 0; left: 0;">
+        </div>
+      {% endif %}
+    </div>
+  </a>
+
+{% if ctx.files.length > 1 %}
+  <script>
+  (function() {
+    function Banner(el) {
+      var that = this;
+      var items = el.children;
+
+      this.active = 0;
+      this.limit = items.length - 1;
+      this.prev = this.limit;
+      this.preprev = this.limit - 1;
+      this.next = this.active + 1;
+
+      this.setActive = function(active) {
+        this.active = this.active === this.limit ? 0 : active + 1;
+        this.prev = this.active === 0 ? this.limit : this.active - 1;
+        this.next = this.active === this.limit ? 0 : this.active + 1;
+        this.preprev = this.active === 0 ? this.limit - 1 : this.active === 1 ? this.limit : this.active - 2;
+      }
+
+      this.init = function() {
+        this.timer();
+        //console.log(items[0].getAttribute('data-duration'))
+
+      }
+
+      this.timer = function() {
+        //items[that.next].style.zIndex = 0;
+        items[that.active].style.zIndex = 3;
+
+        var t = items[that.active].getAttribute('data-duration') || 2000;
+        var r = items[that.active].getAttribute('data-fadespeed') || 500;
+        var fadeSpeed = Math.ceil(Math.ceil(r) / 100);
+
+
+        setTimeout(function() {
+          that.setActive(that.active);
+          /*if(that.active === 1) {
+              items[that.limit].style.zIndex = 0;
+          }*/
+          items[that.active].style.opacity = 0;
+          items[that.prev].style.zIndex = 1;
+          items[that.preprev].style.zIndex = 0;
+
+          fadeIn(items[that.active], fadeSpeed)
+          that.timer();
+        }, +t);
+      }
+
+      function fadeIn(s, t) {
+        if (t > 0) {
+          if ((s.style.opacity -= -0.01) < 1) {
+            setTimeout(function() {
+              fadeIn(s, t);
+            }, t)
+          }
+        } else {
+          s.style.opacity = 1;
+        }
+      }
+      return this.init();
+    }
+
+    var banner = new Banner(document.getElementById('banner_{{ ctx.id }}'));
+
+  })();
+  </script>
+  {% endif %}
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="c-page">
+	<div class="c-page__main">
+		<div class="c-page__inner">
+			<div class="c-form__title">Создать Баннер</div>
+		
+
+			<form action="/saveForm" class="c-form c-form--block"  method="POST" enctype="multipart/form-data">
+
+				<div class="c-form__unit">
+					<label class="c-form__label">Название баннера(eng)</label>
+					<input type="text" class="c-form__control" name="name" required>
+				</div>
+
+				<div class="c-form__unit">
+					<label class="c-form__label">Картинки</label>
+					<input required type="file" name="banners" id="banners" multiple>
+				</div>
+
+				<div class="c-form__unit">
+					<button type="submit" class="c-form__btn">Создать баннер</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

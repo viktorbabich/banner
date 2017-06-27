@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="c-page">
+	<div class="c-page__main">
+		<div class="c-page__inner">
+			<div class="c-form__title">{{ ctx.name }}</div>
+			<form action="/saveForm" class="c-form" method="POST" enctype="multipart/form-data">
+				<input type="hidden" id="bannerId" value="{{ ctx.id }}">
+				<input class="c-form__control"  id="bannerWidth" readonly type="hidden" name="width" value="{{ ctx.width }}">
+				<input class="c-form__control"  id="bannerHeight" readonly type="hidden" name="height" value="{{ ctx.height }}">
+				<input  value="{{ ctx.name }}" name="name" type="hidden"  id="bannerName">
+			
+				{#<div class="c-form__unit">
+					<label class="c-form__label" for="sizeSelect">Размер</label>
+					<select class="c-form__control" name="sizes" id="sizeSelect">
+						{% for item in sizes %}
+							<option  value="{{ item.width }}X{{ item.height }}" {% if item.width == ctx.width and item.height == ctx.height  %}selected{% endif %}>{{ item.width }}X{{ item.height }}</option>
+						{% endfor %}
+						<option value="custom" seleted>Другой размер</option>
+					</select>
+				</div>#}
+				<div class="c-form__unit">
+					<button type="button" class="c-form__btn j-upd" >Сохранить баннер</button>
+				</div>
+				<div class="c-form__unit">
+					<a  href="/download" class="c-form__btn c-form__btn--secondary" >Скачать</a>
+				</div>
+
+				<div class="c-form__unit">
+					<label class="c-form__btn c-form__btn--secondary"  for="addsFiles">Добавить слайды</label>
+					<input type="file" style="display: none" name="newslide" multiple  id="addsFiles">
+				</div>
+
+				<div class="c-form__unit">
+					<a  href="/" class="c-form__btn c-form__btn--secondary" >Новый баннер</a>
+				</div>
+			</form>
+			
+			<div class="c-files">
+				{% for item in ctx.files %}
+					<div class="c-files__item">
+						<div class="c-files__img" data-img="../banner/{{ item.img }}" style="background-image: url(../banner/{{ item.img }})"></div>
+						<input type="number" class="c-files__duration" min="0" step="100" value="{{ item.duration }}">
+						<input type="number"  class="c-files__fade" min="0" step="100" value="{{ item.fade }}">
+						<input type="hidden"  class="c-files__name" value="{{ item.img }}">
+						<div class="c-files__remove"></div>
+						<div class="c-files__info">
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+		
+	</div>
+	<div class="c-page__aside">
+		<div class="c-preview">
+			<div class="c-banner" id="banner_{{ ctx.id }}" style="height: {{ ctx.height }}px; position: relative; width: {{ ctx.width }}px">
+				{% if ctx.files.length > 1 %}
+					{% for item in ctx.files %}
+						<div class="c-item" data-duration="{{ item.duration }}" data-fadespeed="{{ item.fade }}" style="height: {{ ctx.height }}px; background: url('../banner/{{item.img}}') no-repeat 50% 50% #fff; background-size: cover; width: 100%; z-index: 0; position: absolute; top: 0; left: 0;" >
+						</div>
+					{% endfor %} 
+				{% else %}
+					<div class="c-item" style="height: {{ ctx.height }}px; background: url('../banner/{{ctx.files[0].img}}') no-repeat 50% 50% #fff; background-size: cover; width: 100%; z-index: 0; position: absolute; top: 0; left: 0;" >
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% if ctx.files.length > 1 %}
+<script>
+(function() {
+	function Banner (el) {
+		var that = this;
+		var items = el.children;
+		this.active = 0;
+		this.limit = items.length - 1;
+		this.prev = this.limit;
+		this.preprev = this.limit - 1;
+		this.next = this.active + 1;
+
+		this.setActive = function(active) {
+			this.active  = this.active === this.limit ? 0 : active + 1;
+			this.prev = this.active === 0 ? this.limit : this.active - 1;
+			this.next = this.active === this.limit ? 0 : this.active + 1;
+			this.preprev = this.active === 0 ? this.limit - 1 : this.active === 1? this.limit: this.active - 2;
+		}
+
+		this.init = function() {
+			this.timer ();
+		}
+
+		this.timer = function() {
+			//items[that.next].style.zIndex = 0;
+			items[that.active].style.zIndex = 3;
+
+			var t = items[that.active].getAttribute('data-duration') || 2000;
+			var r = items[that.active].getAttribute('data-fadespeed') || 500;
+			var fadeSpeed = Math.ceil(Math.ceil(r)/100);
+
+
+			setTimeout(function() {
+				that.setActive(that.active);
+				/*if(that.active === 1) {
+					items[that.limit].style.zIndex = 0;
+				}*/
+				items[that.active].style.opacity = 0;
+				items[that.prev].style.zIndex = 1;
+				items[that.preprev].style.zIndex = 0;
+				fadeIn(items[that.active], fadeSpeed)
+				that.timer();
+			}, +t);
+		}
+
+		function fadeIn (s, t) {
+			if ( t > 0) {
+				if ((s.style.opacity -= -0.01) < 1) {
+					setTimeout(function() {
+						fadeIn(s, t);
+					}, t)	
+				} 
+			} else {
+				s.style.opacity = 1;
+			}
+		}
+		return this.init();
+	} 
+	var banner = new Banner(document.getElementById('banner_{{ ctx.id }}'));
+})();
+</script>
+{% endif %}
+
+{% endblock %}
